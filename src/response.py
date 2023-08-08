@@ -1,13 +1,13 @@
+import errors
+
 from collections import defaultdict
 from datetime import datetime
 
-class ParseResponseException(Exception):
-	def __init__(self, error):
-		self.message = "Unexpected response format: {err}".format(err=error)
-
 class TopViewsResponse:
-	def __init__(self, json):
+	def __init__(self, json, start_date, end_date):
 		self.article_views = self.parse_json(json)
+		self.start_date = start_date.strftime('%Y/%m/%d')
+		self.end_date = end_date.strftime('%Y/%m/%d')
 
 	def parse_json(self, response):
 		'''
@@ -46,7 +46,7 @@ class TopViewsResponse:
 						views = article['views']
 						article_views[name] += views
 		except Exception as e:
-			raise ParseResponseException(str(e))
+			raise errors.ParseResponseException(str(e))
 
 		result = []
 		for idx, key in enumerate(sorted(article_views, key=article_views.get, reverse=True)):
@@ -75,12 +75,18 @@ class DateWithMostViewsResponse:
 					elif views == top_views:
 						top_ts.append(ts)
 		except Exception as e:
-			raise ParseResponseException(str(e))
+			raise errors.ParseResponseException(str(e))
 
-		dates = [(datetime.strptime(ts, '%Y%m%d').strftime('%m/%d/%Y')) for ts in top_ts]
+		dates = [(datetime.strptime(ts, '%Y%m%d').strftime('%Y/%m/%d')) for ts in top_ts]
 		return {'views': top_views, 'dates': dates}
 
 class ArticleViewsResponse:
+	'''
+	@param json: A list of daily json responses from the WikiMedia PageViews API
+	@param article: The name of the article
+	@param start_date: The start date of the response data
+	@param end_date: The end date of the response data
+	'''
 	def __init__(self, json, article, start_date, end_date):
 		self.views = self.sum_views(json)
 		self.article = article
@@ -91,5 +97,5 @@ class ArticleViewsResponse:
 		try:
 			return sum([item['views'] for item in response['items']])
 		except Exception as e:
-			raise ParseResponseException(str(e))
+			raise errors.ParseResponseException(str(e))
 
