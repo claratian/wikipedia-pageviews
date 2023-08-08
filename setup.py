@@ -12,5 +12,5 @@ setup(
     long_description=readme,
     author='Clara Tian',
     url='https://github.com/claratian/pageviews',
-    packages=find_packages(exclude=('tests', 'docs'))
+    packages=find_packages(exclude=('tests'))
 )
