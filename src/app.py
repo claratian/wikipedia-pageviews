@@ -1,3 +1,5 @@
+#!/usr/bin/env python3
+
 import wikipedia_client
 import response
 
@@ -6,15 +8,6 @@ from datetime import datetime, timedelta, date
 from dateutil.parser import parse
 from errors import InvalidInputError
 
-"""
-for readme:
-	date can be formatted as yyyy/mm/dd, yyyy/m/d, yyyy-mm-dd, or yyyy-m-d
-	when providing a monthly or weekly range, if part of the range is invalid (in the future), 
-	only results of days for which the api has data will be returned
-	month must be the full string name of the month (lowercase or capitalization doesn't matter) - 
-	can handle mispelled month but formatting of output into proper capitalization is disregarded.
-	year is optional but if not provided will default to current year
-"""
 
 CURR_YEAR = date.today().year
 
@@ -261,9 +254,3 @@ def __format_date(date, use_separators=False):
 def __validate_article(article_name):
     if not article_name:
         raise InvalidInputError("Article name must not be blank")
-
-#day_of_month_with_most_views("Barbie (film)", "July")
-#monthly_views_per_article("Barbie (film)", "July")
-#weekly_views_per_article("Barbie (film)", "2000/08/01")
-#top_weekly_views("2020/08/01")
-#top_monthly_views("July")

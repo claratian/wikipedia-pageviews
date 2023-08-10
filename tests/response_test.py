@@ -1,7 +1,7 @@
 import unittest
 
 from context import errors, response
-from datetime import datetime
+from datetime import datetime, date
 from errors import ParseResponseException
 from response import TopViewsResponse, DateWithMostViewsResponse, ArticleViewsResponse
 
@@ -104,7 +104,7 @@ class ArticleViewsResponseTest(unittest.TestCase):
         data = {
             "items": [{"article": "foo", "views": 10}, {"article": "foo", "views": 12}]
         }
-        result = ArticleViewsResponse(data, "foo", "2023/07/01", "2023/07/07")
+        result = ArticleViewsResponse(data, "foo", date(2023, 7, 1), date(2023, 7, 7))
         self.assertEqual(result.views, 22)
         self.assertEqual(result.article, "foo")
         self.assertEqual(result.start_date, "2023/07/01")
@@ -114,7 +114,9 @@ class ArticleViewsResponseTest(unittest.TestCase):
         data = {"items": [{"article": "foo", "views": 10}, {"article": "foo", "v": 12}]}
         self.assertRaises(
             ParseResponseException,
-            lambda: ArticleViewsResponse(data, "foo", "2023/07/01", "2023/07/07"),
+            lambda: ArticleViewsResponse(
+                data, "foo", date(2023, 7, 1), date(2023, 7, 7)
+            ),
         )
 
 

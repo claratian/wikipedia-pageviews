@@ -7,8 +7,12 @@ from datetime import datetime
 class TopViewsResponse:
     def __init__(self, json, start_date, end_date):
         self.article_views = self.parse_json(json)
+        """A list of hashes describing cumulative article views for the most viewed
+        articles between start_date and end_date"""
         self.start_date = start_date.strftime("%Y/%m/%d")
+        """The start date of the json data from which views are counted"""
         self.end_date = end_date.strftime("%Y/%m/%d")
+        """The end date of the json data until which views are counted (inclusive)"""
 
     def parse_json(self, response):
         """
@@ -64,8 +68,11 @@ class DateWithMostViewsResponse:
     def __init__(self, json, article):
         result = self.parse_json(json)
         self.date = result["dates"]
+        """The date(s) on which the article had the most views"""
         self.views = result["views"]
+        """The number of page views on the above date(s)"""
         self.article = article
+        """The name of the article"""
 
     def parse_json(self, response):
         top_ts = []
@@ -90,18 +97,15 @@ class DateWithMostViewsResponse:
 
 
 class ArticleViewsResponse:
-    """
-    @param json: A list of daily json responses from the WikiMedia PageViews API
-    @param article: The name of the article
-    @param start_date: The start date of the response data
-    @param end_date: The end date of the response data
-    """
-
     def __init__(self, json, article, start_date, end_date):
         self.views = self.sum_views(json)
+        """The number of views for the article from start_date to end_date"""
         self.article = article
-        self.start_date = start_date
-        self.end_date = end_date
+        """The name of the article"""
+        self.start_date = start_date.strftime("%Y/%m/%d")
+        """The start date of the json data from which views are counted"""
+        self.end_date = end_date.strftime("%Y/%m/%d")
+        """The end date of the json data until which views are counted (inclusive)"""
 
     def sum_views(self, response):
         try:
