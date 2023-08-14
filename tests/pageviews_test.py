@@ -1,4 +1,4 @@
-from context import app, wikipedia_client, response
+from context import pageviews, wikipedia_client, response
 
 import unittest
 import mock
@@ -20,7 +20,7 @@ class WeeklyViewsPerArticleTest(unittest.TestCase):
             mock_data, "foo", response_start_date, response_end_date
         )
 
-        result = app.weekly_views_per_article("foo", "2023-07-01")
+        result = pageviews.weekly_views_per_article("foo", "2023-07-01")
 
         mock_views_per_article.assert_called_with(
             "foo", "20230701", "20230707", "daily"
@@ -35,7 +35,7 @@ class WeeklyViewsPerArticleTest(unittest.TestCase):
     def test_exceptions_caught(self, mock_views_per_article):
         mock_views_per_article.side_effect = Exception("exception")
         try:
-            app.weekly_views_per_article("foo", "2023/07/01")
+            pageviews.weekly_views_per_article("foo", "2023/07/01")
         except Exception:
             self.fail("weekly_views_per_article raised Exception unexpectedly")
 
@@ -54,7 +54,7 @@ class MonthlyViewsPerArticleTest(unittest.TestCase):
             mock_data, "foo", response_start_date, response_end_date
         )
 
-        result = app.monthly_views_per_article("foo", "July", "2023")
+        result = pageviews.monthly_views_per_article("foo", "July", "2023")
 
         mock_views_per_article.assert_called_with(
             "foo", "20230701", "20230731", "monthly"
@@ -68,9 +68,9 @@ class MonthlyViewsPerArticleTest(unittest.TestCase):
     def test_exceptions_caught(self):
         try:
             # Invalid month input
-            app.monthly_views_per_article("foo", "Jul", "2023")
+            pageviews.monthly_views_per_article("foo", "Jul", "2023")
             # No data available
-            app.monthly_views_per_article("foo", "July", "2003")
+            pageviews.monthly_views_per_article("foo", "July", "2003")
         except Exception:
             self.fail("monthly_views_per_article raised Exception unexpectedly")
 
@@ -98,7 +98,7 @@ class TopWeeklyViewsTest(unittest.TestCase):
             mock_data, response_start_date, response_end_date
         )
 
-        result = app.top_weekly_views("2023-07-01")
+        result = pageviews.top_weekly_views("2023-07-01")
 
         dates = [
             "2023/07/01",
@@ -118,9 +118,9 @@ class TopWeeklyViewsTest(unittest.TestCase):
     def test_exceptions_caught(self):
         try:
             # Invalid date input
-            app.top_weekly_views("07/01/2023")
+            pageviews.top_weekly_views("07/01/2023")
             # No data available
-            app.top_weekly_views("2003-07-01")
+            pageviews.top_weekly_views("2003-07-01")
         except Exception:
             self.fail("top_weekly_views raised Exception unexpectedly")
 
@@ -148,7 +148,7 @@ class TopMonthlyViewsTest(unittest.TestCase):
             mock_data, response_start_date, response_end_date
         )
 
-        result = app.top_monthly_views("July", "2023")
+        result = pageviews.top_monthly_views("July", "2023")
 
         dates = [
             "2023/07/01",
@@ -192,9 +192,9 @@ class TopMonthlyViewsTest(unittest.TestCase):
     def test_exceptions_caught(self):
         try:
             # Invalid month input
-            app.top_monthly_views("Jul", "2023")
+            pageviews.top_monthly_views("Jul", "2023")
             # No data available
-            app.top_monthly_views("July", "2003")
+            pageviews.top_monthly_views("July", "2003")
         except Exception:
             self.fail("top_monthly_views raised Exception unexpectedly")
 
@@ -212,7 +212,7 @@ class DayOfMonthWithMostViewsTest(unittest.TestCase):
             mock_data, "foo"
         )
 
-        result = app.day_of_month_with_most_views("foo", "July")
+        result = pageviews.day_of_month_with_most_views("foo", "July")
 
         dates = [
             "20230701",
@@ -256,11 +256,11 @@ class DayOfMonthWithMostViewsTest(unittest.TestCase):
     def test_exceptions_caught(self):
         try:
             # Invalid article
-            app.day_of_month_with_most_views("", "July")
+            pageviews.day_of_month_with_most_views("", "July")
             # Invalid month
-            app.day_of_month_with_most_views("foo", "Jul")
+            pageviews.day_of_month_with_most_views("foo", "Jul")
             # No data available
-            app.day_of_month_with_most_views("foo", "July", "2003")
+            pageviews.day_of_month_with_most_views("foo", "July", "2003")
         except Exception:
             self.fail("day_of_month_with_most_views raised Exception unexpectedly")
 

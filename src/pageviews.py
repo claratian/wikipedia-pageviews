@@ -1,5 +1,3 @@
-#!/usr/bin/env python3
-
 import wikipedia_client
 import response
 
@@ -8,8 +6,6 @@ from datetime import datetime, timedelta, date
 from dateutil.parser import parse
 from errors import InvalidInputError
 
-
-CURR_YEAR = date.today().year
 
 WEEKLY_VIEWS_OUTPUT = "Page views for {article} between {start} and {end}: {views}\n"
 MONTHLY_VIEWS_OUTPUT = "Page views for {article} during {month} {year}: {views}\n"
@@ -28,7 +24,7 @@ MONTHLY = "monthly"
 DAYS_IN_WEEK = 7
 
 
-def weekly_views_per_article(article, from_date):
+def weekly_views_per_article(article, year_month_day):
     """
     Expects:
     The name of a Wikipedia article and a valid date in the format yyyy/mm/dd, yyyy/m/d, yyyy-mm-dd,
@@ -42,34 +38,29 @@ def weekly_views_per_article(article, from_date):
     - end date: end date of the returned article data (the date of the last day of the
     requested week)
     """
-    try:
-        article = str(article)
-        __validate_article(article)
-        start_date, end_date = __date_range_for_week(str(from_date))
-        start_formatted, end_formatted = __format_date(start_date), __format_date(
-            end_date
-        )
+    start_date, end_date = __date_range_for_week(year_month_day)
+    start_formatted, end_formatted = __format_date(start_date), __format_date(
+        end_date
+    )
 
-        response_json = wikipedia_client.views_per_article(
-            article, start_formatted, end_formatted, DAILY
+    response_json = wikipedia_client.views_per_article(
+        article, start_formatted, end_formatted, DAILY
+    )
+    result = response.ArticleViewsResponse(
+        response_json, article, start_date.date(), end_date.date()
+    )
+    print(
+        WEEKLY_VIEWS_OUTPUT.format(
+            article=result.article,
+            start=result.start_date,
+            end=result.end_date,
+            views=result.views,
         )
-        result = response.ArticleViewsResponse(
-            response_json, article, start_date.date(), end_date.date()
-        )
-        print(
-            WEEKLY_VIEWS_OUTPUT.format(
-                article=result.article,
-                start=result.start_date,
-                end=result.end_date,
-                views=result.views,
-            )
-        )
-        return result
-    except Exception as e:
-        print("Failed to get weekly views per article: {err}\n".format(err=str(e)))
+    )
+    return result
 
 
-def monthly_views_per_article(article, month_name, year=CURR_YEAR):
+def monthly_views_per_article(article, year_month):
     """
     Expects:
     The name of a Wikipedia article, a valid non-abbreviated month name, and optionally a year
@@ -83,9 +74,7 @@ def monthly_views_per_article(article, month_name, year=CURR_YEAR):
     - end date: end date of the returned article data (the end of the requested month)
     """
     try:
-        article = str(article)
-        __validate_article(article)
-        start_date, end_date, _ = __date_range_for_month(month_name, int(year))
+        start_date, end_date, _ = __date_range_for_month(year_month)
         start_formatted, end_formatted = __format_date(start_date), __format_date(
             end_date
         )
@@ -106,7 +95,7 @@ def monthly_views_per_article(article, month_name, year=CURR_YEAR):
         print("Failed to get monthly views per article: {err}\n".format(err=str(e)))
 
 
-def top_weekly_views(from_date):
+def top_weekly_views(year_month_day):
     """
     Expects:
             A valid date in the format yyyy/mm/dd, yyyy/m/d, yyyy-mm-dd, or yyyy-m-d that indicates
@@ -125,23 +114,20 @@ def top_weekly_views(from_date):
                     ...
             ]
     """
-    try:
-        start_date = __parse_date(str(from_date))
-        dates = [start_date + timedelta(days=x) for x in range(DAYS_IN_WEEK)]
-        query_dates = [__format_date(date, use_separators=True) for date in dates]
-        response_json = wikipedia_client.top_articles(query_dates)
-        result = response.TopViewsResponse(response_json, start_date, dates[-1])
-        print(
-            TOP_WEEKLY_VIEWS_OUTPUT.format(
-                start=result.start_date, end=result.end_date, views=result.article_views
-            )
+    start_date = __parse_full_date(year_month_day)
+    dates = [start_date + timedelta(days=x) for x in range(DAYS_IN_WEEK)]
+    query_dates = [__format_date(date, use_separators=True) for date in dates]
+    response_json = wikipedia_client.top_articles(query_dates)
+    result = response.TopViewsResponse(response_json, from_date, dates[-1])
+    print(
+        TOP_WEEKLY_VIEWS_OUTPUT.format(
+            start=result.start_date, end=result.end_date, views=result.article_views
         )
-        return result
-    except Exception as e:
-        print("Failed to get top weekly views: {err}\n".format(err=str(e)))
+    )
+    return result
 
 
-def top_monthly_views(month_name, year=CURR_YEAR):
+def top_monthly_views(year_month):
     """
     Expects:
             A valid, non-abbreviated month name and optionally a year.
@@ -161,7 +147,8 @@ def top_monthly_views(month_name, year=CURR_YEAR):
             ]
     """
     try:
-        start_date, _, month_length = __date_range_for_month(month_name, int(year))
+
+        start_date, _, month_length = __date_range_for_month(str(year_month))
         dates = [start_date + timedelta(days=x) for x in range(month_length)]
         query_dates = [__format_date(date, use_separators=True) for date in dates]
         response_json = wikipedia_client.top_articles(query_dates)
@@ -177,7 +164,7 @@ def top_monthly_views(month_name, year=CURR_YEAR):
         print("Failed to get top monthly views: {err}\n".format(err=str(e)))
 
 
-def day_of_month_with_most_views(article, month_name, year=CURR_YEAR):
+def day_of_month_with_most_views(article, year_month):
     """
     Expects:
             An article name, a valid non-abbreviated month name, and optionally a year.
@@ -189,68 +176,62 @@ def day_of_month_with_most_views(article, month_name, year=CURR_YEAR):
             - views: the number of views for the article on the returned date(s)
             - article: the name of the requested article
     """
-    try:
-        article = str(article)
-        __validate_article(article)
-        start_date, _, month_length = __date_range_for_month(month_name, int(year))
-        dates = [start_date + timedelta(days=x) for x in range(month_length)]
-        query_dates = [__format_date(date) for date in dates]
+    start_date, _, month_length = __date_range_for_month(str(year_month))
+    dates = [start_date + timedelta(days=x) for x in range(month_length)]
+    query_dates = [__format_date(date) for date in dates]
 
-        response_json = wikipedia_client.views_per_article_by_day(
-            article, query_dates, DAILY
-        )
-        result = response.DateWithMostViewsResponse(response_json, article)
-        print(
-            DAY_OF_MONTH_MOST_VIEWS_OUTPUT.format(
-                article=article,
-                month=month_name,
-                year=str(year),
-                date=result.date,
-                views=result.views,
-            )
-        )
-        return result
-    except Exception as e:
-        print("Failed to get day of month with most views: {err}\n".format(err=str(e)))
+    response_json = wikipedia_client.views_per_article_by_day(
+        article, query_dates, DAILY
+    )
+    result = response.DateWithMostViewsResponse(response_json, article)
+    return result
 
 
-def __date_range_for_week(start_date):
-    start_date = __parse_date(start_date)
+def __week_from_date(date):
+    return date + timedelta(days=DAYS_IN_WEEK - 1)
+
+def __date_range_for_week(year_month_day):
+    start_date = __parse_full_date(year_month_day)
     end_date = start_date + timedelta(days=DAYS_IN_WEEK - 1)
     return start_date, end_date
 
-
-def __date_range_for_month(month_name, year):
+def __date_range_for_month(year_month):
     try:
-        month = datetime.strptime(month_name, "%B").month
+        year_month_arr = year_month.split("-")
+        year, month = int(year_month_arr[0]), int(year_month_arr[1])
+        month_length = monthrange(year, month)[1]
+        start_date = datetime(year, month, 1)
+        end_date = start_date + timedelta(days=month_length - 1)
+        return start_date, end_date, month_length
     except Exception as e:
         raise InvalidInputError(
-            "Month entered must be valid full month name (e.g. July, August)"
+            "Year and month must be in valid ISO 8601 format (yyyy-mm)."
         )
-    month_length = monthrange(year, month)[1]
-    start_date = datetime(year, month, 1)
-    end_date = start_date + timedelta(days=month_length - 1)
-    return start_date, end_date, month_length
+
+# def __get_date(year: int, month: int, day: int):
+#     try:
+#         return datetime(year, month, day)
+#     except Exception as e:
+#         raise InvalidInputError(
+#             "Invalid date: please provide a valid 4 digit year as well as a single or double digit month and day."
+#         )
+
+def __parse_full_date(year_month_day):
+    try:
+        return datetime.strptime(year_month_day, "%Y-%m-%d")
+    except Exception as e:
+        raise InvalidInputError(
+            "Year, month, and day must be in valid ISO 8601 format (yyyy-mm-dd)."
+        )
 
 
-def __parse_date(string_date):
-    for fmt in ("%Y/%m/%d", "%Y-%m-%d"):
-        try:
-            return datetime.strptime(string_date, fmt)
-        except ValueError:
-            pass
-    raise InvalidInputError(
-        "Provided date must be in the format yyyy/mm/dd, yyyy/m/d, yyyy-mm-dd, or yyyy-m-d"
-    )
-
-
-def __format_date(date, use_separators=False):
+def __format_date(date: datetime, use_separators=False):
     if use_separators:
         return date.strftime("%Y/%m/%d")
     else:
         return date.strftime("%Y%m%d")
 
 
-def __validate_article(article_name):
-    if not article_name:
-        raise InvalidInputError("Article name must not be blank")
+# def __validate_article(article_name: str):
+#     if not article_name:
+#         raise InvalidInputError("Article name must not be blank")
