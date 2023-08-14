@@ -6,13 +6,13 @@ from datetime import datetime
 
 class TopViewsResponse:
     def __init__(self, json, start_date, end_date):
+        self.start_date = start_date.strftime("%Y-%m-%d")
+        """The start date of the json data from which views are counted"""
+        self.end_date = end_date.strftime("%Y-%m-%d")
+        """The end date of the json data until which views are counted (inclusive)"""
         self.article_views = self.parse_json(json)
         """A list of hashes describing cumulative article views for the most viewed
         articles between start_date and end_date"""
-        self.start_date = start_date.strftime("%Y/%m/%d")
-        """The start date of the json data from which views are counted"""
-        self.end_date = end_date.strftime("%Y/%m/%d")
-        """The end date of the json data until which views are counted (inclusive)"""
 
     def parse_json(self, response):
         """
@@ -91,7 +91,7 @@ class DateWithMostViewsResponse:
             raise errors.ParseResponseException(str(e))
 
         dates = [
-            (datetime.strptime(ts, "%Y%m%d").strftime("%Y/%m/%d")) for ts in top_ts
+            (datetime.strptime(ts, "%Y%m%d").strftime("%Y-%m-%d")) for ts in top_ts
         ]
         return {"views": top_views, "dates": dates}
 
@@ -102,9 +102,9 @@ class ArticleViewsResponse:
         """The number of views for the article from start_date to end_date"""
         self.article = article
         """The name of the article"""
-        self.start_date = start_date.strftime("%Y/%m/%d")
+        self.start_date = start_date.strftime("%Y-%m-%d")
         """The start date of the json data from which views are counted"""
-        self.end_date = end_date.strftime("%Y/%m/%d")
+        self.end_date = end_date.strftime("%Y-%m-%d")
         """The end date of the json data until which views are counted (inclusive)"""
 
     def sum_views(self, response):
