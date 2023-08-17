@@ -32,7 +32,7 @@ Press CTRL+C to quit
 Visit the localhost address above (`http://127.0.0.1:8000`) in a web browser.
 ### Get view count of a specific article for a week or month
 
-Path: `http://127.0.0.1:8000/views/<granularity>/<article_name>/<date>`
+Path: `/views/<granularity>/<article_name>/<date>`
 
 Some examples:
 
@@ -71,7 +71,7 @@ Note: month or week ranges before 2015-10-10 (as of the time this document is be
 
 ### Retrieve the day of the month where an article got the most page views
 
-Path: `http://127.0.0.1:8000/views/top-day/<article_name>/<date>`
+Path: `/views/top-day/<article_name>/<date>`
 
 The same notes on the how the article and date parameters should be formatted apply from the previous section, but the date should always be in YYYY-MM format as the requested time frame will always be a month.
 
@@ -94,7 +94,7 @@ If there happen to be multiple dates tied for the most views in a month for a gi
 
 ### Get a list of the most viewed articles for a week or month
 
-Path: `http://127.0.0.1:8000/top/<granularity>/<date>`
+Path: `/top/<granularity>/<date>`
 
 Just like getting the view count of a specific article for a week or month,
 the granularity should be either `weekly` to get weekly views for an article or `monthly` to get monthly views for an article.
