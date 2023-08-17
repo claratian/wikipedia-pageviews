@@ -1,7 +1,7 @@
 
 # WikiMedia PageViews Wrapper
 
-This is a wrapper for the [WikiMedia PageViews API](https://wikitech.wikimedia.org/wiki/Analytics/AQS/Pageviews) built on top of the `requests` library.
+This is a wrapper for the [WikiMedia PageViews API](https://wikitech.wikimedia.org/wiki/Analytics/AQS/Pageviews) built using Flask.
 
 
 The following user functions are supported:
