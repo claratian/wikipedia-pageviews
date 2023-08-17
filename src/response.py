@@ -48,14 +48,20 @@ class TopViewsResponse:
                     articles = item["articles"]
                     for article in articles:
                         name = article["article"]
-                        views = article["views"]
-                        article_views[name] += views
+                        if name != "-":
+                            """The WikiMedia API returns a "-" as a special value for 'no page title found'"""
+                            views = article["views"]
+                            article_views[name] += views
         except Exception as e:
             raise errors.ParseResponseException(str(e))
 
         result = []
         for idx, key in enumerate(
-            sorted(article_views, key=article_views.get, reverse=True)
+            sorted(
+                article_views,
+                key=lambda name: (article_views[name], name),
+                reverse=True,
+            )
         ):
             result.append(
                 {"rank": idx + 1, "article": key, "views": article_views[key]}

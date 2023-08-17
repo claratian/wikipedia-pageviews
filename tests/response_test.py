@@ -36,8 +36,8 @@ class TopViewsResponseTest(unittest.TestCase):
             {"rank": 2, "article": "foo", "views": 4},
         ]
         self.assertEqual(result.article_views, article_views)
-        self.assertEqual(result.start_date, "2023/07/01")
-        self.assertEqual(result.end_date, "2023/07/07")
+        self.assertEqual(result.start_date, "2023-07-01")
+        self.assertEqual(result.end_date, "2023-07-07")
 
     def test_exception(self):
         day1 = {
@@ -73,7 +73,7 @@ class DateWithMostViewsResponseTest(unittest.TestCase):
         day1 = {"items": [{"article": "foo", "timestamp": "2023070700", "views": 1}]}
         day2 = {"items": [{"article": "foo", "timestamp": "2023070800", "views": 2}]}
         result = DateWithMostViewsResponse([day1, day2], "foo")
-        dates = ["2023/07/08"]
+        dates = ["2023-07-08"]
 
         self.assertEqual(result.date, dates)
         self.assertEqual(result.views, 2)
@@ -84,7 +84,7 @@ class DateWithMostViewsResponseTest(unittest.TestCase):
         day2 = {"items": [{"article": "foo", "timestamp": "2023070800", "views": 2}]}
         day3 = {"items": [{"article": "foo", "timestamp": "2023070900", "views": 2}]}
         result = DateWithMostViewsResponse([day1, day2, day3], "foo")
-        dates = ["2023/07/08", "2023/07/09"]
+        dates = ["2023-07-08", "2023-07-09"]
 
         self.assertEqual(result.date, dates)
         self.assertEqual(result.views, 2)
@@ -107,8 +107,8 @@ class ArticleViewsResponseTest(unittest.TestCase):
         result = ArticleViewsResponse(data, "foo", date(2023, 7, 1), date(2023, 7, 7))
         self.assertEqual(result.views, 22)
         self.assertEqual(result.article, "foo")
-        self.assertEqual(result.start_date, "2023/07/01")
-        self.assertEqual(result.end_date, "2023/07/07")
+        self.assertEqual(result.start_date, "2023-07-01")
+        self.assertEqual(result.end_date, "2023-07-07")
 
     def test_exception(self):
         data = {"items": [{"article": "foo", "views": 10}, {"article": "foo", "v": 12}]}

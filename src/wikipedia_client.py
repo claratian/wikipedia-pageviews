@@ -46,8 +46,6 @@ def views_per_article_by_day(article, dates, granularity):
 
 
 def views_per_article(article, start_date, end_date, granularity):
-    article = "_".join(article.split(" "))
-
     params = PER_ARTICLE_PARAMS.format(
         project=PROJECT,
         article=article,
@@ -63,21 +61,21 @@ def views_per_article(article, start_date, end_date, granularity):
 
 def __get_pageviews_concurrent(urls, dates):
     results = []
-    errors = []
+    missing_data_dates = []
     url_dates = zip(urls, dates)
     with ThreadPoolExecutor() as executor:
         future_results = [
-            executor.submit(__get_pageviews, url, date) for url, date in url_dates
+            executor.submit(__get_pageviews, url, [date]) for url, date in url_dates
         ]
         for future in as_completed(future_results):
             try:
                 results.append(future.result())
-            except ThrottlingException as te:
-                raise te
-            except Exception as e:
-                errors.append(str(e))
-    if len(errors):
-        raise Exception(str(errors))
+            except ThrottlingException as t:
+                raise t
+            except ZeroOrNotLoadedDataException as z:
+                missing_data_dates += z.dates
+    if len(missing_data_dates):
+        raise ZeroOrNotLoadedDataException(missing_data_dates)
     return results
 
 
