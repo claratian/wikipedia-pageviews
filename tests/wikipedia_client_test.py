@@ -63,14 +63,13 @@ class WikipediaClientTest(unittest.TestCase):
 
         with self.assertRaises(Exception) as context:
             wikipedia_client.top_articles(invalid_top_dates)
-        # There should be two errors appended to the exception message
-        self.assertEqual(len(eval(str(context.exception))), 2)
+        self.assertEqual(len(context.exception.dates), 2)
 
         with self.assertRaises(Exception) as context:
             wikipedia_client.views_per_article_by_day(
                 "foo", invalid_per_article_dates, "daily"
             )
-        self.assertEqual(len(eval(str(context.exception))), 2)
+        self.assertEqual(len(context.exception.dates), 2)
 
         self.assertRaises(
             ZeroOrNotLoadedDataException,

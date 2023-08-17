@@ -7,22 +7,20 @@ class ZeroOrNotLoadedDataException(Exception):
     has not yet been loaded into the API's database yet.
     https://wikitech.wikimedia.org/wiki/Analytics/PageviewAPI#Gotchas
 
-    @param date: date for which there was 0 views or no data
-    @param date_range: start and end date for which there was 0 views or no data
-    (present only for views per article queries)
+    @param dates: dates for which there was 0 views or no data
     """
 
-    def __init__(self, date):
-        self.date = date
+    def __init__(self, dates):
+        self.dates = dates
 
     def __str__(self):
-        if isinstance(self.date, list):
+        if isinstance(self.dates, list):
             return "0 pageviews or data not available for date range {dates}".format(
-                dates=str(self.date)
+                dates=str(sorted(self.dates))
             )
         else:
             return "0 pageviews or data not available for date {date}".format(
-                date=str(self.date)
+                date=str(self.dates)
             )
 
 
@@ -36,16 +34,19 @@ class ThrottlingException(Exception):
     """
 
     def __str__(self):
-        return "Too many requests made"
+        return "Too many requests made, received 429 from Wikimedia API"
 
 
-class InvalidInputError(Exception):
+class InvalidInputException(Exception):
     """
     Raised for invalid input provided to methods in app.py
     """
 
     def __init__(self, message):
         self.message = message
+
+    def __str__(self):
+        return self.message
 
 
 class ParseResponseException(Exception):
@@ -56,3 +57,6 @@ class ParseResponseException(Exception):
 
     def __init__(self, error):
         self.message = "Unexpected response format: {err}".format(err=error)
+
+    def __str__(self):
+        return self.message

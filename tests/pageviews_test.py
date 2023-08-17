@@ -4,12 +4,13 @@ import unittest
 import mock
 from datetime import datetime, date
 from mock import patch, PropertyMock
+import errors
 
 
-class WeeklyViewsPerArticleTest(unittest.TestCase):
+class ViewsPerArticleTest(unittest.TestCase):
     @patch("response.ArticleViewsResponse")
     @patch("wikipedia_client.views_per_article")
-    def test_get_views_per_article(self, mock_views_per_article, mock_response):
+    def test_get_views_per_article_weekly(self, mock_views_per_article, mock_response):
         mock_data = {
             "items": [{"article": "foo", "views": 11}, {"article": "foo", "views": 12}]
         }
@@ -20,7 +21,7 @@ class WeeklyViewsPerArticleTest(unittest.TestCase):
             mock_data, "foo", response_start_date, response_end_date
         )
 
-        result = pageviews.weekly_views_per_article("foo", "2023-07-01")
+        result = pageviews.views_per_article("weekly", "foo", "2023-07-01")
 
         mock_views_per_article.assert_called_with(
             "foo", "20230701", "20230707", "daily"
@@ -31,19 +32,9 @@ class WeeklyViewsPerArticleTest(unittest.TestCase):
         self.assertEqual(result, mock_response.return_value)
         self.assertEqual(result.views, 23)
 
-    @patch("wikipedia_client.views_per_article")
-    def test_exceptions_caught(self, mock_views_per_article):
-        mock_views_per_article.side_effect = Exception("exception")
-        try:
-            pageviews.weekly_views_per_article("foo", "2023/07/01")
-        except Exception:
-            self.fail("weekly_views_per_article raised Exception unexpectedly")
-
-
-class MonthlyViewsPerArticleTest(unittest.TestCase):
     @patch("response.ArticleViewsResponse")
     @patch("wikipedia_client.views_per_article")
-    def test_get_views_per_article(self, mock_views_per_article, mock_response):
+    def test_get_views_per_article_monthly(self, mock_views_per_article, mock_response):
         mock_data = {
             "items": [{"article": "foo", "views": 10}, {"article": "foo", "views": 12}]
         }
@@ -54,7 +45,7 @@ class MonthlyViewsPerArticleTest(unittest.TestCase):
             mock_data, "foo", response_start_date, response_end_date
         )
 
-        result = pageviews.monthly_views_per_article("foo", "July", "2023")
+        result = pageviews.views_per_article("monthly", "foo", "2023-07")
 
         mock_views_per_article.assert_called_with(
             "foo", "20230701", "20230731", "monthly"
@@ -65,17 +56,18 @@ class MonthlyViewsPerArticleTest(unittest.TestCase):
         self.assertEqual(result, mock_response.return_value)
         self.assertEqual(result.views, 22)
 
-    def test_exceptions_caught(self):
-        try:
-            # Invalid month input
-            pageviews.monthly_views_per_article("foo", "Jul", "2023")
-            # No data available
-            pageviews.monthly_views_per_article("foo", "July", "2003")
-        except Exception:
-            self.fail("monthly_views_per_article raised Exception unexpectedly")
+    def test_exceptions_thrown(self):
+        self.assertRaises(
+            errors.ZeroOrNotLoadedDataException,
+            lambda: pageviews.views_per_article("monthly", "foo", "2003-07"),
+        )
+        self.assertRaises(
+            errors.InvalidInputException,
+            lambda: pageviews.views_per_article("yearly", "foo", "2020-07"),
+        )
 
 
-class TopWeeklyViewsTest(unittest.TestCase):
+class TopViewsTest(unittest.TestCase):
     @patch("response.TopViewsResponse")
     @patch("wikipedia_client.top_articles")
     def test_get_top_articles(self, mock_top_articles, mock_response):
@@ -98,7 +90,7 @@ class TopWeeklyViewsTest(unittest.TestCase):
             mock_data, response_start_date, response_end_date
         )
 
-        result = pageviews.top_weekly_views("2023-07-01")
+        result = pageviews.top_views("weekly", "2023-07-01")
 
         dates = [
             "2023/07/01",
@@ -115,17 +107,6 @@ class TopWeeklyViewsTest(unittest.TestCase):
         )
         self.assertEqual(result, mock_response.return_value)
 
-    def test_exceptions_caught(self):
-        try:
-            # Invalid date input
-            pageviews.top_weekly_views("07/01/2023")
-            # No data available
-            pageviews.top_weekly_views("2003-07-01")
-        except Exception:
-            self.fail("top_weekly_views raised Exception unexpectedly")
-
-
-class TopMonthlyViewsTest(unittest.TestCase):
     @patch("response.TopViewsResponse")
     @patch("wikipedia_client.top_articles")
     def test_get_top_articles(self, mock_top_articles, mock_response):
@@ -148,7 +129,7 @@ class TopMonthlyViewsTest(unittest.TestCase):
             mock_data, response_start_date, response_end_date
         )
 
-        result = pageviews.top_monthly_views("July", "2023")
+        result = pageviews.top_views("monthly", "2023-07")
 
         dates = [
             "2023/07/01",
@@ -189,14 +170,15 @@ class TopMonthlyViewsTest(unittest.TestCase):
         )
         self.assertEqual(result, mock_response.return_value)
 
-    def test_exceptions_caught(self):
-        try:
-            # Invalid month input
-            pageviews.top_monthly_views("Jul", "2023")
-            # No data available
-            pageviews.top_monthly_views("July", "2003")
-        except Exception:
-            self.fail("top_monthly_views raised Exception unexpectedly")
+    def test_exceptions_thrown(self):
+        self.assertRaises(
+            errors.ZeroOrNotLoadedDataException,
+            lambda: pageviews.top_views("monthly", "2003-07"),
+        )
+        self.assertRaises(
+            errors.InvalidInputException,
+            lambda: pageviews.top_views("yearly", "2020-07"),
+        )
 
 
 class DayOfMonthWithMostViewsTest(unittest.TestCase):
@@ -212,7 +194,7 @@ class DayOfMonthWithMostViewsTest(unittest.TestCase):
             mock_data, "foo"
         )
 
-        result = pageviews.day_of_month_with_most_views("foo", "July")
+        result = pageviews.day_of_month_with_most_views("foo", "2023-07")
 
         dates = [
             "20230701",
@@ -250,19 +232,18 @@ class DayOfMonthWithMostViewsTest(unittest.TestCase):
         mock_views_by_day.assert_called_with("foo", dates, "daily")
         mock_response.assert_called_with(mock_data, "foo")
         self.assertEqual(result, mock_response.return_value)
-        self.assertEqual(result.date, ["2023/07/05"])
+        self.assertEqual(result.date, ["2023-07-05"])
         self.assertEqual(result.views, 6)
 
-    def test_exceptions_caught(self):
-        try:
-            # Invalid article
-            pageviews.day_of_month_with_most_views("", "July")
-            # Invalid month
-            pageviews.day_of_month_with_most_views("foo", "Jul")
-            # No data available
-            pageviews.day_of_month_with_most_views("foo", "July", "2003")
-        except Exception:
-            self.fail("day_of_month_with_most_views raised Exception unexpectedly")
+    def test_exceptions_thrown(self):
+        self.assertRaises(
+            errors.ZeroOrNotLoadedDataException,
+            lambda: pageviews.day_of_month_with_most_views("foo", "2003-07"),
+        )
+        self.assertRaises(
+            errors.InvalidInputException,
+            lambda: pageviews.day_of_month_with_most_views("foo", "2003"),
+        )
 
 
 if __name__ == "__main__":
