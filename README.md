@@ -62,9 +62,11 @@ Response:
 
 The granularity should be either `weekly` to get weekly views for an article or `monthly` to get monthly views for an article.
 
-The article name should be case sensitive (for example, searching for article views on `newjeans` will not return the same result as `NewJeans`). Any spaces in the article name should be represented with an underscore (e.g. `Barbie_(film)`). Note: special characters such as accents on letters and apostrophes will need to be [URL encoded](https://documentation.n-able.com/N-central/userguide/Content/Further_Reading/API_Level_Integration/API_Integration_URLEncoding.html) (for example, http://127.0.0.1:8000/views/monthly/Prisoner%27s_dilemma/2022-12).
+The article name should be case sensitive (for example, searching for article views on `newjeans` will not return the same result as `NewJeans`). Any spaces in the article name should be represented with an underscore (e.g. `Barbie_(film)`). 
+Note: special characters such as accents on letters and apostrophes will need to be [URL encoded](https://documentation.n-able.com/N-central/userguide/Content/Further_Reading/API_Level_Integration/API_Integration_URLEncoding.html) (for example, http://127.0.0.1:8000/views/monthly/Prisoner%27s_dilemma/2022-12).
 
-Finally, the date should be in [ISO 8601](https://www.iso.org/iso-8601-date-and-time-format.html) format: YYYY-MM-DD if the granularity is weekly and YYYY-MM if the granularity is monthly.
+Finally, the date should be in [ISO 8601](https://www.iso.org/iso-8601-date-and-time-format.html) format: YYYY-MM-DD if the granularity is weekly and YYYY-MM if the granularity is monthly. 
+Note: month or week ranges before 2015-10-10 (as of the time this document is being written) or after the current date will not have page view data available.
 
 
 ### Retrieve the day of the month where an article got the most page views
@@ -158,10 +160,6 @@ Partial response (rest ommitted for readability)
         ...
 ```
 
-
-### Usage Tips
-
-- Month or week ranges before 2015-10-10 (as of the time this document is being written) or after the current date will not have page view data available.
 
 ### Design decisions/assumptions
 - An input week can start from any date and includes that date and the following 6 days, whereas an input month must be a specific calendar month (2023-08, 2023-07, etc instead of 2023-07-05 through 2023-08-05).
